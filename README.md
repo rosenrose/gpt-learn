@@ -1,5 +1,5 @@
 ```
-uv python pin 3.11
+uv python pin 3.13
 
 uv init
 

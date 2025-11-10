@@ -1,9 +1,5 @@
-import tiktoken
-import langchain
-
-
 def main():
-    print(tiktoken, langchain)
+    print("Hello from gpt-learn!")
 
 
 if __name__ == "__main__":
