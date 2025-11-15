@@ -6,7 +6,10 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "ipykernel>=7.1.0",
-    "langchain>=1.0.4",
+    "ipywidgets>=8.1.8",
+    "langchain>=1.0.7",
     "langchain-community>=0.4.1",
-    "langchain-openai>=1.0.2",
+    "langchain-openai>=1.0.3",
+    "unstructured[docx,pdf]>=0.18.20",
+    "python-magic>=0.4.27",
 ]

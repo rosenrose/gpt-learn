@@ -5,3 +5,4 @@ uv init
 
 uv add -r requirements.txt
 ```
+http://www.george-orwell.org/1984/0.html
