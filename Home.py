@@ -1,24 +1,14 @@
 import streamlit as st
+from datetime import datetime
 
-st.title("Hello, world!")
-st.subheader("Welcome to Streamlit")
-st.markdown("""
-    #### I love it.
-""")
+today = datetime.today().strftime("%H:%M:%S")
 
+st.title(today)
+model = st.selectbox("Choose your model", ("GPT-4", "Gemini 3.0"))
+st.write(model)
 
-class A:
-    def __init__(self):
-        pass
+name = st.text_input("What is your name?")
+st.write(name)
 
-
-1
-2
-3
-st.write("abc")
-st.write([1, 2, 3])
-st.write((1, 2, 3))
-st.write({"a": None, "b": set([1, 2, 3]), "c": st.title})
-st.write(A)
-st.write(st)
-st.write("a", None, True, False)
+value = st.slider("temperature", min_value=0.1, max_value=1.0)
+st.write(value)
