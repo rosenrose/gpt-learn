@@ -1,14 +1,18 @@
 import streamlit as st
-from datetime import datetime
 
-today = datetime.today().strftime("%H:%M:%S")
+st.set_page_config(page_title="GPT Home", page_icon="🧊")
 
-st.title(today)
-model = st.selectbox("Choose your model", ("GPT-4", "Gemini 3.0"))
-st.write(model)
+with st.sidebar:
+    st.title("title")
 
-name = st.text_input("What is your name?")
-st.write(name)
+st.title("GPT Home")
+tabs = st.tabs(["A", "B", "C"])
 
-value = st.slider("temperature", min_value=0.1, max_value=1.0)
-st.write(value)
+with tabs[0]:
+    st.write("a")
+
+with tabs[1]:
+    st.write("b")
+
+with tabs[2]:
+    st.write("c")
