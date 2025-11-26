@@ -4,6 +4,8 @@ from langchain_classic.embeddings import CacheBackedEmbeddings
 from langchain_classic.storage import LocalFileStore
 from langchain_community.document_loaders import UnstructuredFileIOLoader
 from langchain_community.vectorstores import Chroma
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import CharacterTextSplitter
 
@@ -21,6 +23,15 @@ splitter = CharacterTextSplitter.from_tiktoken_encoder(
     chunk_size=600, chunk_overlap=100, separator="\n"
 )
 embeddings = OpenAIEmbeddings()
+prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            "Answer the question using ONLY the following context. If you don't know the answer just say you don't know. DON'T make anything up.\nContext: {context}",
+        ),
+        ("human", "{question}"),
+    ]
+)
 
 
 @st.cache_resource(show_spinner="Embedding document...")
@@ -67,6 +78,17 @@ if file:
 
     if message:
         send_message(message, "human")
-        send_message("placeholder", "ai")
+        chain = (
+            {
+                "context": retriever
+                | RunnableLambda(lambda docs: "\n\n".join(doc.page_content for doc in docs)),
+                "question": RunnablePassthrough(),
+            }
+            | prompt
+            | chat
+        )
+
+        response = chain.invoke(message)
+        send_message(response.content, "ai")
 else:
     st.session_state["messages"] = []
