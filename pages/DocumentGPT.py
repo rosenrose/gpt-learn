@@ -4,6 +4,7 @@ from langchain_classic.embeddings import CacheBackedEmbeddings
 from langchain_classic.storage import LocalFileStore
 from langchain_community.document_loaders import UnstructuredFileIOLoader
 from langchain_community.vectorstores import Chroma
+from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -14,11 +15,26 @@ st.set_page_config(page_title="Document GPT", page_icon="📄")
 st.session_state["messages"] = st.session_state.get("messages", [])
 
 
-chat = ChatOpenAI(
-    temperature=0.1,
-    # streaming=True,
-    # callbacks=[StreamingStdOutCallbackHandler()]
-)
+class ChatCallbackHandler(BaseCallbackHandler):
+    message = ""
+    message_box = None
+
+    def on_llm_start(self, *args, **kwargs):
+        self.message = ""
+        self.message_box = st.empty()
+
+    def on_llm_end(self, *args, **kwargs):
+        with st.sidebar:
+            st.write("LLM ended")
+
+        save_message(self.message, "ai")
+
+    def on_llm_new_token(self, token, *args, **kwargs):
+        self.message += token
+        self.message_box.markdown(self.message)
+
+
+chat = ChatOpenAI(temperature=0.1, streaming=True, callbacks=[ChatCallbackHandler()])
 splitter = CharacterTextSplitter.from_tiktoken_encoder(
     chunk_size=600, chunk_overlap=100, separator="\n"
 )
@@ -27,7 +43,7 @@ prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            "Answer the question using ONLY the following context. If you don't know the answer just say you don't know. DON'T make anything up.\nContext: {context}",
+            "Answer the question in Korean using ONLY the following context. If you don't know the answer just say you don't know. DON'T make anything up.\nContext: {context}",
         ),
         ("human", "{question}"),
     ]
@@ -50,12 +66,16 @@ def embed_fiile(file):
     return retriever
 
 
+def save_message(message, role):
+    st.session_state["messages"].append({"message": message, "role": role})
+
+
 def send_message(message, role, is_save=True):
     with st.chat_message(role):
         st.markdown(message)
 
     if is_save:
-        st.session_state["messages"].append({"message": message, "role": role})
+        save_message(message, role)
 
 
 def draw_history():
@@ -88,7 +108,7 @@ if file:
             | chat
         )
 
-        response = chain.invoke(message)
-        send_message(response.content, "ai")
+        with st.chat_message("ai"):
+            response = chain.invoke(message)
 else:
     st.session_state["messages"] = []
